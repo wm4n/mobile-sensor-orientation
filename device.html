@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="user-scalable=no" />
+    <title>SensorOrientation</title>
+    <style>
+html, body {
+    background-color: black;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+.view {
+    width:100%;
+    height:100%;
+    position:absolute;
+}
+.wrap {
+	perspective: 800px;
+	perspective-origin: 45px 80px;
+    position: absolute;
+    top: calc(50% - 80px);
+    left: calc(50% - 45px);
+}
+.transformCube {
+	position: absolute;
+	width: 90px;
+    height: 160px;
+    background-color: rgba(100, 100, 100, 0.3);
+	transform-style: preserve-3d;
+    transform-origin: 45px 80px;
+}
+.transformCube div {
+	position: absolute;
+    border: 1px solid #c7c7c7;
+    color: white;
+}
+.back {
+    width:90px;
+    height:160px;
+    background:#f7f7f7;
+	transform: translateZ(-10px) rotateY(180deg);
+}
+.right {
+    width:20px;
+    height:160px;
+    background:#f7f7f7;
+	transform: translateZ(10px) translateX(90px) rotateY(-270deg);
+	transform-origin: center left;
+}
+.left {
+    width:20px;
+    height:160px;
+    background:#f7f7f7;
+	transform: translateZ(10px) rotateY(-270deg);
+	transform-origin: center left;
+}
+.top {
+    width:90px;
+    height:20px;
+    background:#f7f7f7;
+	transform: translateZ(10px) rotateX(-90deg);
+	transform-origin: top center;
+}
+.bottom {
+    width:90px;
+    height:20px;
+    background:#f7f7f7;
+	transform: translateZ(10px) translateY(160px) rotateX(-90deg);
+	transform-origin: top center;
+}
+.front {
+    width:90px;
+    height:160px;
+    background:#f7f7f7;
+	transform: translateZ(10px);
+}
+.screen {
+    width:80px;
+    height:140px;
+    margin:5px 5px 15px 5px;
+    background: #2B2B2B;
+	transform: translateZ(10px);
+}
+#touchId {
+    width:10px;
+    height:10px;
+    margin:147px 40px 5px 40px;
+    border: 1px solid black;
+    border-radius: 50%;
+	transform: translateZ(10px);
+}
+@keyframes rotateAnim {
+    from {transform: rotateX(0deg) rotateY(360deg) rotateZ(-180deg);}
+    to {transform: rotateX(360deg) rotateY(0deg) rotateZ(180deg);}
+}
+#console {
+    color:white;
+    font-size: 50px;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    text-align: center;
+}
+    </style>
+</head>
+
+<body>
+    <div class="view">
+        <div id="console"></div>
+        <div class="wrap">
+            <div class="transformCube">
+                <div class="front"></div>
+                <div class="back"></div>
+                <div class="top"></div>
+                <div class="bottom"></div>
+                <div class="left"></div>
+                <div class="right"></div>
+                <div class="screen"></div>
+                <div id="touchId"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var alphaOffset, betaOffset, gammaOffset;
+
+        (function () {
+            if (window.DeviceOrientationEvent) {
+                window.addEventListener("deviceorientation", onOrientationEvent, true);
+            }
+            else {
+                setAnimation();
+            }
+        })();
+
+        function onOrientationEvent(event) {
+            if (!event) {
+                // not support
+                setAnimation();
+                document.getElementById("console").innerHTML = "Browser does not support orientation!";
+                return;
+            }
+            if (!event.alpha) {
+                // not support
+                setAnimation();
+                document.getElementById("console").innerHTML = "Browser does not support orientation!";
+                return;
+            }
+            if (alphaOffset === undefined) {
+                alphaOffset = event.alpha;
+                betaOffset = event.beta;
+                gammaOffset = event.gamma;
+            }
+            let cube = document.getElementsByClassName("transformCube");
+            if (cube && cube.length > 0) {
+                let orientation = "rotateX(" + -(event.beta - betaOffset) + "deg) " +
+                    "rotateY(" + (event.gamma - gammaOffset) + "deg) " +
+                    "rotateZ(" + -(event.alpha - alphaOffset) + "deg)";
+                setVendor(cube[0], "Transform", orientation);
+            }
+        }
+
+        function setVendor(element, property, value) {
+            let capFirst = property.charAt(0).toUpperCase() + property.slice(1);
+            element.style["webkit" + capFirst] = value;
+            element.style["moz" + capFirst] = value;
+            element.style["ms" + capFirst] = value;
+            element.style["o" + capFirst] = value;
+            element.style[property.toLowerCase()] = value;
+        }
+
+        function setAnimation() {
+            let cube = document.getElementsByClassName("transformCube");
+            for (let i = 0; i < cube.length; i++) {
+                if (cube[i]) {
+                    cube[i].style.animationName = "rotateAnim";
+                    cube[i].style.animationDuration = "4s";
+                    cube[i].style.animationIterationCount = "infinite";
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
